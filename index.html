@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul Interaktif: Artikel Ilmiah Populer</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js untuk Visualisasi Data -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        water: { // Mengubah palet warna 'water' menjadi nuansa Oranye agar tema berubah tanpa merusak struktur HTML
+                            100: '#ffedd5',
+                            300: '#fdba74',
+                            400: '#fb923c',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                            900: '#7c2d12',
+                        },
+                        ai: {
+                            500: '#8b5cf6',
+                            700: '#6d28d9',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Styles & Glassmorphism */
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #082f49 100%);
+            color: #f1f5f9;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+        }
+
+        .glass-nav {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #f97316; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #fb923c; 
+        }
+
+        .tab-active {
+            background: linear-gradient(to right, #f97316, #8b5cf6);
+            color: white;
+            font-weight: 600;
+            border: none;
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+        }
+
+        .tab-inactive {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .tab-inactive:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .tab-locked {
+            background: rgba(15, 23, 42, 0.5);
+            color: #475569;
+            border: 1px dashed rgba(255,255,255,0.1);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Toast Notification */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background: rgba(15, 23, 42, 0.95);
+            border-left: 4px solid #f97316;
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideInRight 0.3s ease-out forwards;
+        }
+        .toast.success { border-color: #10b981; }
+        .toast.error { border-color: #ef4444; }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col relative">
+
+    <!-- Navigation -->
+    <nav class="glass-nav fixed w-full z-40 top-0 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <img src="https://i.imgur.com/VjDeYNF.png" alt="Logo Sekolah" class="h-10 w-auto bg-white rounded p-0.5">
+                    <span class="font-heading font-bold text-xl tracking-tight text-white hidden sm:block ml-2">
+                        Sastra<span class="text-water-400">Sains</span>
+                    </span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4 text-sm text-gray-300">
+                        <span class="px-3 py-2"><i class="fa-solid fa-graduation-cap mr-2"></i>Bahasa Indonesia SMP Kelas VIII</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="pt-28 pb-12 px-4 relative">
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-[-1] opacity-20">
+            <!-- Decorative abstract background elements -->
+            <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-water-500 rounded-full blur-[100px]"></div>
+            <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-ai-500 rounded-full blur-[100px]"></div>
+        </div>
+        
+        <div class="max-w-4xl mx-auto text-center mt-8 fade-in">
+            <span class="inline-block py-1 px-3 rounded-full bg-ai-500/20 text-ai-300 border border-ai-500/30 text-xs font-bold uppercase tracking-wider mb-4">
+                Tema Kontekstual Global 2026
+            </span>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-heading font-extrabold mb-6 leading-tight">
+                Bahasa Indonesia <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-water-400 to-ai-400">Artikel Ilmiah Populer</span>
+            </h1>
+            <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+                Modul Interaktif: <strong class="text-white">Mengungkap Fakta Sains di Balik Isu Global</strong>. <br>
+                Mari belajar menelaah, mengkritisi, dan menulis gagasanmu tentang isu lingkungan (seperti krisis air akibat AI) dengan gaya bahasa yang menarik dan mudah dipahami! <br> <span class="text-water-400 font-semibold mt-2 inline-block"><i class="fa-solid fa-clock mr-1"></i> Waktu ideal: 30 Menit / Kegiatan</span>
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-20">
+        
+        <!-- Tab Navigation (Scrollable on mobile) -->
+        <div class="flex overflow-x-auto pb-4 mb-8 gap-2 no-scrollbar scroll-smooth snap-x z-10 sticky top-[70px] bg-[#0f172a]/90 backdrop-blur-md pt-2" id="tab-container">
+            <button onclick="switchTab(1)" id="tab-1" class="tab-active snap-center shrink-0 px-5 py-3 rounded-xl text-sm transition-all duration-300 flex items-center gap-2">
+                <i class="fa-solid fa-magnifying-glass"></i> KB 1: Identifikasi
+            </button>
+            <button onclick="switchTab(2)" id="tab-2" class="tab-locked snap-center shrink-0 px-5 py-3 rounded-xl text-sm transition-all duration-300 flex items-center gap-2">
+                <i class="fa-solid fa-lock"></i> KB 2: Menelaah
+            </button>
+            <button onclick="switchTab(3)" id="tab-3" class="tab-locked snap-center shrink-0 px-5 py-3 rounded-xl text-sm transition-all duration-300 flex items-center gap-2">
+                <i class="fa-solid fa-lock"></i> KB 3: Kritis
+            </button>
+            <button onclick="switchTab(4)" id="tab-4" class="tab-locked snap-center shrink-0 px-5 py-3 rounded-xl text-sm transition-all duration-300 flex items-center gap-2">
+                <i class="fa-solid fa-lock"></i> KB 4: Gali Ide
+            </button>
+            <button onclick="switchTab(5)" id="tab-5" class="tab-locked snap-center shrink-0 px-5 py-3 rounded-xl text-sm transition-all duration-300 flex items-center gap-2">
+                <i class="fa-solid fa-lock"></i> KB 5: Menulis
+            </button>
+            <button onclick="switchTab(6)" id="tab-6" class="tab-locked snap-center shrink-0 px-5 py-3 rounded-xl text-sm transition-all duration-300 flex items-center gap-2">
+                <i class="fa-solid fa-lock"></i> KB 6: Refleksi
+            </button>
+        </div>
+
+        <!-- Content Container -->
+        <div class="relative">
+            
+            <!-- KB 1: Mengidentifikasi -->
+            <section id="content-1" class="block fade-in">
+                <div class="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-water-900/60 border border-water-500/40 text-water-300 text-sm font-semibold shadow-lg">
+                    <i class="fa-solid fa-clock fa-spin-pulse"></i> Target Belajar: 30 Menit (Membaca & Evaluasi)
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-1">
+                        <div class="glass-panel p-6 sticky top-[150px]">
+                            <h2 class="text-2xl font-heading font-bold mb-4 text-white">Apa itu Artikel?</h2>
+                            <p class="text-gray-300 mb-4 text-sm leading-relaxed">
+                                Menurut Ruangguru, Artikel adalah karangan berisi <strong>fakta dan opini</strong> yang dibuat untuk dipublikasikan di media cetak maupun sosial. Tujuannya adalah menyampaikan gagasan dilengkapi data faktual untuk meyakinkan, mendidik, atau sekadar menghibur pembaca.
+                            </p>
+                            <h3 class="font-bold text-water-400 mb-2 mt-4">Ciri-Ciri Artikel:</h3>
+                            <ul class="space-y-3">
+                                <li class="flex gap-3 text-sm text-gray-300"><i class="fa-solid fa-check-circle text-green-400 mt-1"></i> <strong>Didasari Fakta:</strong> Bukan rekayasa atau mitos.</li>
+                                <li class="flex gap-3 text-sm text-gray-300"><i class="fa-solid fa-check-circle text-green-400 mt-1"></i> <strong>Faktual & Informatif:</strong> Berdasarkan kenyataan.</li>
+                                <li class="flex gap-3 text-sm text-gray-300"><i class="fa-solid fa-check-circle text-green-400 mt-1"></i> <strong>Opini Subjektif:</strong> Memuat gagasan/pendapat yang berlandaskan teori.</li>
+                                <li class="flex gap-3 text-sm text-gray-300"><i class="fa-solid fa-check-circle text-green-400 mt-1"></i> <strong>Singkat, Padat, Jelas:</strong> Komunikatif (ilmiah populer).</li>
+                                <li class="flex gap-3 text-sm text-gray-300"><i class="fa-solid fa-check-circle text-green-400 mt-1"></i> <strong>Sistematis:</strong> Terstruktur agar mudah dipahami.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="glass-panel p-6 md:p-8">
+                            <h3 class="text-xl font-heading font-bold mb-4 flex items-center gap-2">
+                                <i class="fa-solid fa-book-open text-ai-400"></i> Bacaan: Krisis Air di Balik Layar AI
+                            </h3>
+                            <div class="prose prose-invert max-w-none text-gray-300 bg-gray-900/50 p-6 rounded-lg border border-gray-700 font-serif leading-loose">
+                                <p>Pernahkah kamu membayangkan bahwa setiap kali kamu meminta ChatGPT membuatkan pantun atau menjawab PR matematika, kamu secara tidak langsung ikut 'meminum' air?</p>
+                                <p>Terdengar aneh, bukan? Tapi inilah fakta mengejutkan di era digital. Menurut laporan keberlanjutan global tahun 2024 hingga 2026, teknologi Kecerdasan Buatan (AI) yang super pintar ini ternyata sangat "haus".</p>
+                                <p>Untuk membuat AI bisa berpikir cerdas, perusahaan teknologi harus melatihnya di dalam pusat data (<em>data center</em>) raksasa. Komputer-komputer canggih ini bekerja tanpa henti memproses triliunan data dan menghasilkan panas yang luar biasa. Nah, untuk mencegah komputer tersebut meledak atau meleleh, dibutuhkan sistem pendingin raksasa yang menyedot jutaan liter air tawar setiap harinya.</p>
+                                <p>Bayangkan saja, satu sesi pelatihan model AI tingkat lanjut bisa menghabiskan hingga 5 juta liter air tawar segar. Jumlah itu sama dengan air untuk mengisi penuh dua kolam renang berstandar Olimpiade! Mengingat ketersediaan air bersih di bumi yang semakin menipis akibat perubahan iklim, apakah kemajuan teknologi pesat ini sepadan dengan risiko kekeringan di masa depan?</p>
+                            </div>
+                        </div>
+
+                        <!-- Tempat Kuis Dinamis -->
+                        <div id="quiz-wrap-1"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- KB 2: Menelaah -->
+            <section id="content-2" class="hidden fade-in">
+                <div class="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-water-900/60 border border-water-500/40 text-water-300 text-sm font-semibold shadow-lg">
+                    <i class="fa-solid fa-clock fa-spin-pulse"></i> Target Belajar: 30 Menit (Analisis Struktur & Evaluasi)
+                </div>
+                <div class="glass-panel p-6 md:p-8 mb-8">
+                    <h2 class="text-2xl font-heading font-bold mb-2">Menelaah Struktur Teks Artikel</h2>
+                    <p class="text-gray-400 mb-8">Secara umum, teks artikel yang baik ditulis secara sistematis. Berdasarkan kaidah kebahasaan, berikut adalah 3 bagian utama pembentuk struktur artikel:</p>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <div class="space-y-4">
+                                <div class="bg-gray-800/60 p-4 rounded-lg border-l-2 border-ai-400">
+                                    <h4 class="font-bold text-ai-300">1. Pernyataan Pendapat (Tesis)</h4>
+                                    <p class="text-sm text-gray-300 mt-1">Bagian ini memuat uraian aktual atau <em>hook</em> (pancingan) yang penting untuk dijadikan pijakan pembahasan masalah di dalam artikel. (Contoh: Pengenalan isu krisis air).</p>
+                                </div>
+                                <div class="bg-gray-800/60 p-4 rounded-lg border-l-2 border-water-400">
+                                    <h4 class="font-bold text-water-300">2. Argumentasi</h4>
+                                    <p class="text-sm text-gray-300 mt-1">Bagian inti tempat penulis mengupas permasalahan secara faktual dan informatif. Di sini dimasukkan data penelitian (seperti penggunaan juta liter air) dan juga opini logis si penulis.</p>
+                                </div>
+                                <div class="bg-gray-800/60 p-4 rounded-lg border-l-2 border-green-400">
+                                    <h4 class="font-bold text-green-300">3. Pernyataan Ulang (Reiterasi)</h4>
+                                    <p class="text-sm text-gray-300 mt-1">Bagian penutup tulisan yang berisi kalimat kunci untuk merangkum seluruh pembahasan ke dalam bentuk simpulan yang kuat.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Chart -->
+                        <div class="bg-gray-900 rounded-xl p-4 border border-gray-700 shadow-xl relative">
+                            <h4 class="text-center font-bold text-sm mb-4 text-gray-300">Estimasi Penggunaan Air Global untuk Data Center AI (Miliar Liter)</h4>
+                            <canvas id="waterChart" class="w-full h-64"></canvas>
+                            <p class="text-xs text-gray-500 text-center mt-4">*Data simulasi untuk tujuan edukasi berdasarkan proyeksi pertumbuhan industri.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="quiz-wrap-2"></div>
+            </section>
+
+            <!-- KB 3: Membandingkan & Mengkritisi -->
+            <section id="content-3" class="hidden fade-in">
+                <div class="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-water-900/60 border border-water-500/40 text-water-300 text-sm font-semibold shadow-lg">
+                    <i class="fa-solid fa-clock fa-spin-pulse"></i> Target Belajar: 30 Menit (Berpikir Kritis & Uji Pemahaman)
+                </div>
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-heading font-bold">Mengkritisi: Artikel vs Jurnal Ilmiah</h2>
+                    <p class="text-gray-400 mt-2">Meskipun sama-sama memuat informasi edukatif, Artikel Populer dan Jurnal Ilmiah memiliki perbedaan tujuan dan ciri khas.</p>
+                </div>
+
+                <div class="glass-panel p-6 mt-8 bg-blue-900/20 border-blue-500/30">
+                    <h3 class="font-bold text-blue-300 mb-4"><i class="fa-solid fa-circle-info mr-2"></i>Karakteristik Teks Artikel:</h3>
+                    <ul class="space-y-4">
+                        <li class="text-sm text-gray-300 leading-relaxed border-b border-blue-800/50 pb-3">
+                            <strong class="text-white block mb-1">1. Mengandung Fakta & Opini Subjektif</strong>
+                            Jika jurnal murni berisi pemaparan hasil riset, maka artikel <strong>sah</strong> memuat opini atau pendapat subjektif penulis. Asalkan, gagasan tersebut berlandaskan pembuktian fakta atau teori logis (bukan tebakan asal).
+                        </li>
+                        <li class="text-sm text-gray-300 leading-relaxed border-b border-blue-800/50 pb-3">
+                            <strong class="text-white block mb-1">2. Gaya Penulisan & Target Pembaca</strong>
+                            Artikel ditulis singkat dengan gaya bahasa komunikatif, menghibur, dan ditujukan bagi pembaca masyarakat umum (siapa saja). Kebalikannya, Jurnal ditulis sangat rinci dengan bahasa kaku/formal khusus untuk dibaca ilmuwan dan akademisi.
+                        </li>
+                        <li class="text-sm text-gray-300 leading-relaxed">
+                            <strong class="text-white block mb-1">3. Kedalaman Review & Referensi</strong>
+                            Jurnal ilmiah wajib melalui proses <em>Quality Control / Review</em> yang sangat ketat oleh pakar sejawat, dan referensinya pun diwajibkan lengkap. Sementara, tingkat rujukan daftar pustaka dalam artikel populer lebih disederhanakan asalkan berasal dari portal kredibel (situs resmi/buku/pakar).
+                        </li>
+                    </ul>
+                </div>
+
+                <div id="quiz-wrap-3"></div>
+            </section>
+
+            <!-- KB 4: Gali Ide -->
+            <section id="content-4" class="hidden fade-in">
+                <div class="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-water-900/60 border border-water-500/40 text-water-300 text-sm font-semibold shadow-lg">
+                    <i class="fa-solid fa-clock fa-spin-pulse"></i> Target Belajar: 30 Menit (Eksplorasi Ide & Konsep)
+                </div>
+                <div class="glass-panel p-6 md:p-8">
+                    <h2 class="text-2xl font-heading font-bold mb-4">Kenali 4 Jenis Artikel & Gali Idemu!</h2>
+                    <p class="text-gray-400 mb-6">Sebelum memikirkan gagasan (contoh: krisis lingkungan), kamu harus menargetkan jenis (genre) artikel apa yang akan kamu buat berdasarkan cara penyampaiannya:</p>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div class="bg-gray-800/80 p-5 rounded-xl border border-gray-700 text-center flex flex-col items-center justify-center hover:bg-gray-700 transition-colors">
+                            <i class="fa-solid fa-screwdriver-wrench text-2xl text-water-400 mb-3"></i>
+                            <h4 class="font-bold text-sm text-white leading-tight mb-1">Artikel Praktis</h4>
+                            <p class="text-[11px] text-gray-400 mt-1">Naratif/urutan waktu tentang petunjuk cara membuat atau melakukan suatu keterampilan.</p>
+                        </div>
+                        <div class="bg-gray-800/80 p-5 rounded-xl border border-gray-700 text-center flex flex-col items-center justify-center hover:bg-gray-700 transition-colors">
+                            <i class="fa-solid fa-face-smile text-2xl text-yellow-400 mb-3"></i>
+                            <h4 class="font-bold text-sm text-white leading-tight mb-1">Artikel Ringan</h4>
+                            <p class="text-[11px] text-gray-400 mt-1">Masalah ringan, tidak butuh konsentrasi tinggi. Biasa menghibur (humor) tapi tetap informatif.</p>
+                        </div>
+                        <div class="bg-gray-800/80 p-5 rounded-xl border border-gray-700 text-center flex flex-col items-center justify-center hover:bg-gray-700 transition-colors">
+                            <i class="fa-solid fa-comments text-2xl text-ai-400 mb-3"></i>
+                            <h4 class="font-bold text-sm text-white leading-tight mb-1">Artikel Opini</h4>
+                            <p class="text-[11px] text-gray-400 mt-1">Mengupas suatu masalah secara mendalam berisi murni pandangan penulis (tajuk rencana/editorial).</p>
+                        </div>
+                        <div class="bg-gray-800/80 p-5 rounded-xl border border-gray-700 text-center flex flex-col items-center justify-center hover:bg-gray-700 transition-colors">
+                            <i class="fa-solid fa-microscope text-2xl text-green-400 mb-3"></i>
+                            <h4 class="font-bold text-sm text-white leading-tight mb-1">Analisis Ahli</h4>
+                            <p class="text-[11px] text-gray-400 mt-1">Paling "serius" menggunakan bahasa baku. Laporan kajian akademis (sering disebut artikel ilmiah).</p>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-8 border-t border-gray-700 pt-8 mt-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Pilih Area Minatmu:</label>
+                            <select id="idea-category" class="w-full bg-gray-800 border border-gray-600 text-white rounded-lg p-3 focus:ring-2 focus:ring-water-500 outline-none mb-6">
+                                <option value="">-- Pilih Kategori --</option>
+                                <option value="lingkungan">🌍 Lingkungan & Iklim</option>
+                                <option value="teknologi">💻 Teknologi & Gadget</option>
+                                <option value="kesehatan">🏥 Kesehatan & Tubuh Kita</option>
+                                <option value="luarangkasa">🚀 Luar Angkasa</option>
+                            </select>
+
+                            <button onclick="generateIdea()" class="w-full bg-ai-600 hover:bg-ai-500 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-lg">
+                                <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Hasilkan Ide Topik
+                            </button>
+                        </div>
+
+                        <div class="bg-gray-900 p-6 rounded-xl border border-gray-700 min-h-[200px] flex flex-col justify-center items-center text-center">
+                            <h3 class="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-2">Rekomendasi Judul Populer:</h3>
+                            <div id="idea-result" class="text-xl font-heading text-water-300 font-bold leading-relaxed">
+                                <em>Pilih kategori dan klik tombol untuk mendapatkan ide!</em>
+                            </div>
+                            <p id="idea-desc" class="text-sm text-gray-400 mt-4 hidden"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="quiz-wrap-4"></div>
+            </section>
+
+            <!-- KB 5: Menulis -->
+            <section id="content-5" class="hidden fade-in">
+                <div class="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-water-900/60 border border-water-500/40 text-water-300 text-sm font-semibold shadow-lg">
+                    <i class="fa-solid fa-clock fa-spin-pulse"></i> Target Belajar: 30 Menit (Tata Bahasa PUEBI & Drafting)
+                </div>
+                
+                <div class="glass-panel p-6 mb-8 border-l-4 border-ai-500 bg-gray-900/40">
+                    <h3 class="font-bold text-white mb-3 text-lg"><i class="fa-solid fa-book-journal-whills text-ai-400 mr-2"></i>Kaidah Kebahasaan Teks Artikel</h3>
+                    <p class="text-sm text-gray-300 mb-3">Sebelum menyusun kerangka (draft), ingatlah untuk menyisipkan ketiga pedoman tata bahasa ini agar tulisanmu renyah dibaca:</p>
+                    <ul class="list-disc ml-6 text-sm text-gray-300 space-y-2">
+                        <li><strong>Adverbia (Keterangan):</strong> Gunakan kata yang menegaskan makna untuk meyakinkan audiens. Contoh: <em>sangat, lebih, selalu, sering, sebagian besar, jarang.</em></li>
+                        <li><strong>Konjungsi (Kata Hubung):</strong> Manfaatkan perangkai kalimat, seperti: konjungsi urutan (<em>pertama, lalu</em>), penguat argumen (<em>selain itu, padahal</em>), kausalitas sebab-akibat (<em>karena, oleh sebab itu</em>), dan harapan (<em>supaya, agar</em>).</li>
+                        <li><strong>Kosakata Efektif:</strong> Pilih perbendaharaan kata (diksi) yang menarik dan menonjol agar pembaca mudah terhanyut ke dalam isu opini Anda.</li>
+                    </ul>
+                </div>
+
+                <div id="quiz-wrap-5" class="mb-8"></div>
+
+                <div class="glass-panel p-6 md:p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-2xl font-heading font-bold">Ruang Menulis (Draft)</h2>
+                            <p class="text-gray-400 text-sm">Tulis artikelmu menggunakan 3 pedoman struktur sistematis. Tulisan tersimpan otomatis di perangkatmu.</p>
+                        </div>
+                        <button onclick="clearDraft()" class="text-red-400 hover:text-red-300 text-sm underline"><i class="fa-solid fa-trash mr-1"></i>Hapus Draft</button>
+                    </div>
+
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-bold text-water-300 mb-1">Judul Artikel</label>
+                            <input type="text" id="draft-title" placeholder="Contoh: Ancaman Tersembunyi di Balik Kepintaran AI" class="w-full bg-gray-800/80 border border-gray-600 focus:border-water-500 text-white rounded-lg p-3 outline-none text-lg font-heading font-bold transition-colors">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-water-300 mb-1 flex justify-between">
+                                <span>1. Pernyataan Pendapat (Tesis)</span>
+                                <span class="text-xs text-gray-500 font-normal">Pijakan utama & pengenalan isu (Hook).</span>
+                            </label>
+                            <textarea id="draft-intro" rows="3" placeholder="Gunakan kalimat memancing atau gunakan adverbia (contoh: 'Sangat disayangkan bahwa saat ini...')" class="w-full bg-gray-800/80 border border-gray-600 focus:border-water-500 text-white rounded-lg p-3 outline-none transition-colors resize-y"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-water-300 mb-1 flex justify-between">
+                                <span>2. Argumentasi</span>
+                                <span class="text-xs text-gray-500 font-normal">Inti masalah, sisipkan fakta logis, opini & konjungsi.</span>
+                            </label>
+                            <textarea id="draft-body" rows="8" placeholder="Kupas faktanya di sini. Gunakan kata hubung kausalitas seperti: 'oleh karena itu', 'dengan demikian', 'karena'..." class="w-full bg-gray-800/80 border border-gray-600 focus:border-water-500 text-white rounded-lg p-3 outline-none transition-colors resize-y"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-water-300 mb-1 flex justify-between">
+                                <span>3. Pernyataan Ulang (Reiterasi)</span>
+                                <span class="text-xs text-gray-500 font-normal">Kalimat kunci yang merangkum simpulan.</span>
+                            </label>
+                            <textarea id="draft-closing" rows="3" placeholder="Simpulkan dan berikan harapan penulis di akhir paragraf (contoh: 'Kita berharap agar ke depannya...')" class="w-full bg-gray-800/80 border border-gray-600 focus:border-water-500 text-white rounded-lg p-3 outline-none transition-colors resize-y"></textarea>
+                        </div>
+
+                        <div class="flex gap-4 pt-4">
+                            <button onclick="saveDraft()" class="bg-gradient-to-r from-water-600 to-water-500 hover:from-water-500 hover:to-water-400 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-lg flex-1">
+                                <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Draft
+                            </button>
+                            <button onclick="copyDraft()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition-colors flex-none" title="Salin ke Clipboard">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- KB 6: Refleksi -->
+            <section id="content-6" class="hidden fade-in">
+                <div class="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-water-900/60 border border-water-500/40 text-water-300 text-sm font-semibold shadow-lg justify-center w-full max-w-3xl mx-auto flex">
+                    <i class="fa-solid fa-clock fa-spin-pulse"></i> Target Belajar: 30 Menit (Refleksi Akhir & Post-Test)
+                </div>
+                
+                <div class="glass-panel p-6 md:p-8 max-w-3xl mx-auto mb-8">
+                    <h2 class="text-2xl font-heading font-bold mb-2 text-center">Checklist Finalisasi</h2>
+                    <p class="text-gray-400 text-center mb-8">Sebelum mempublikasikan tulisanmu di Mading Sekolah atau Blog, pastikan kamu telah mencentang semua hal di bawah ini.</p>
+
+                    <div class="space-y-4">
+                        <label class="flex items-center gap-4 p-4 rounded-lg bg-gray-800/50 border border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors">
+                            <input type="checkbox" class="w-6 h-6 rounded text-water-500 bg-gray-900 border-gray-600 focus:ring-water-500 focus:ring-2">
+                            <span class="text-gray-200">Judul tulisanku sudah menarik dan tidak membosankan.</span>
+                        </label>
+                        <label class="flex items-center gap-4 p-4 rounded-lg bg-gray-800/50 border border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors">
+                            <input type="checkbox" class="w-6 h-6 rounded text-water-500 bg-gray-900 border-gray-600 focus:ring-water-500 focus:ring-2">
+                            <span class="text-gray-200">Ada fakta ilmiah atau data obyektif yang aku masukkan.</span>
+                        </label>
+                        <label class="flex items-center gap-4 p-4 rounded-lg bg-gray-800/50 border border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors">
+                            <input type="checkbox" class="w-6 h-6 rounded text-water-500 bg-gray-900 border-gray-600 focus:ring-water-500 focus:ring-2">
+                            <span class="text-gray-200">Bahasa yang kugunakan mudah dimengerti (tidak memakai istilah yang terlalu rumit tanpa penjelasan).</span>
+                        </label>
+                        <label class="flex items-center gap-4 p-4 rounded-lg bg-gray-800/50 border border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors">
+                            <input type="checkbox" class="w-6 h-6 rounded text-water-500 bg-gray-900 border-gray-600 focus:ring-water-500 focus:ring-2">
+                            <span class="text-gray-200">Struktur tulisan runtut (Pendahuluan, Isi, Penutup).</span>
+                        </label>
+                    </div>
+
+                    <div class="mt-10 text-center">
+                        <div class="inline-block p-4 rounded-xl bg-gradient-to-br from-ai-900/50 to-water-900/50 border border-ai-500/30">
+                            <i class="fa-solid fa-rocket text-4xl text-ai-400 mb-3"></i>
+                            <h3 class="font-bold text-white mb-1">Siap Publikasi!</h3>
+                            <p class="text-sm text-gray-400">Kamu hebat! Karyamu siap dibaca dunia. Tunjukkan pada gurumu.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="quiz-wrap-6" class="max-w-3xl mx-auto"></div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 mt-auto py-8 text-center text-gray-500 text-sm">
+        <p class="font-heading font-bold text-water-400 mb-2 text-base"><i class="fa-solid fa-chalkboard-user mr-2"></i>Media Belajar Kreasi Bu Wulan Widari (Guru SMPN 3 Cilegon)</p>
+        <p>&copy; 2026 Modul Bahasa Indonesia SMP - Inovasi Pembelajaran Digital.</p>
+        <p class="mt-1 text-xs">Dibuat menggunakan HTML, Tailwind CSS, & Chart.js</p>
+    </footer>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- Sistem Notifikasi Toast ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>';
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            // Hapus toast setelah 3 detik
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.3s ease-out forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // --- Logika Tab Navigasi & Sistem Gating (Kunci) ---
+        let chartInstance = null; // Menyimpan instance chart untuk dirender saat tab 2 aktif
+        let unlockedTabs = [1]; // Di awal, hanya KB 1 yang terbuka
+
+        // Pemetaan ikon untuk membuka kunci tab
+        const tabIcons = {
+            1: "fa-magnifying-glass",
+            2: "fa-microscope",
+            3: "fa-scale-balanced",
+            4: "fa-lightbulb",
+            5: "fa-pen-nib",
+            6: "fa-share-nodes"
+        };
+
+        function switchTab(tabId) {
+            // Cek apakah tab sudah terbuka
+            if (!unlockedTabs.includes(tabId)) {
+                showToast(`🔒 Terkunci! Selesaikan Kuis KB ${tabId - 1} dengan nilai minimal 80 untuk membuka.`, 'error');
+                return;
+            }
+
+            // Update Tab Styling
+            for (let i = 1; i <= 6; i++) {
+                const tab = document.getElementById(`tab-${i}`);
+                const content = document.getElementById(`content-${i}`);
+                
+                if (i === tabId) {
+                    tab.className = 'tab-active snap-center shrink-0 px-5 py-3 rounded-xl text-sm transition-all duration-300 flex items-center gap-2';
+                    content.classList.remove('hidden');
+                    // Scroll tab into view slightly
+                    tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                } else {
+                    if (unlockedTabs.includes(i)) {
+                        tab.className = 'tab-inactive snap-center shrink-0 px-5 py-3 rounded-xl text-sm transition-all duration-300 flex items-center gap-2';
+                    } else {
+                        tab.className = 'tab-locked snap-center shrink-0 px-5 py-3 rounded-xl text-sm transition-all duration-300 flex items-center gap-2';
+                    }
+                    content.classList.add('hidden');
+                }
+            }
+
+            // Render Chart hanya jika Tab 2 dibuka untuk animasi yang pas
+            if(tabId === 2 && !chartInstance) {
+                renderChart();
+            }
+
+            // Scroll ke top form pada mobile
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        const quizData = {
+            1: [
+                { q: "1. Menurut pengertian dasarnya, teks artikel adalah karangan yang berisi...", options: ["Sepenuhnya imajinasi liar penulis", "Fakta dan opini untuk dipublikasikan di media cetak/sosial", "Dialog dan adegan aksi tokoh fiksi", "Pantun yang bersajak ab-ab"], ans: 1 },
+                { q: "2. Salah satu ciri artikel adalah 'faktual dan informatif', yang berarti...", options: ["Memberikan informasi berdasar kenyataan (hasil riset) yang dapat dipastikan kebenarannya", "Berisi informasi gosip kehidupan artis terbaru", "Menceritakan kejadian mitos dan legenda kutukan kuno", "Bahasanya dienkripsi dengan sandi morse"], ans: 0 },
+                { q: "3. Apakah di dalam artikel ilmiah populer penulis boleh memasukkan opininya?", options: ["Tidak boleh sama sekali, harus murni tulisan robot", "Boleh, namun pemikiran subjektif itu tetap harus dilandasi oleh bukti fakta, teori, atau hasil penelitian", "Boleh, asalkan isinya hanya berupa hinaan tanpa ada fakta", "Wajib berisi 100% opini perasaan penulis belaka"], ans: 1 },
+                { q: "4. Jika ditinjau dari tujuan bagi 'pembacanya', teks artikel bermanfaat sebagai sarana untuk...", options: ["Menghafal rumus-rumus fisika kuantum dengan cepat", "Mendapatkan wawasan pengetahuan, mengedukasi, dan sarana hiburan", "Mengirimkan pesan sandi rahasia pada teman", "Menjatuhkan lawan politik daerah"], ans: 1 },
+                { q: "5. Mengapa teks artikel juga sering diasosiasikan sebagai karya 'ilmiah populer'?", options: ["Karena selalu ditulis dengan dialek bahasa daerah setempat", "Sebab ditulis secara singkat, komunikatif, tidak bertele-tele, agar mudah diterima dan dipahami publik awam", "Karena jumlah lamannya mencapai ratusan lembar layaknya ensiklopedia tebal", "Sebab naskah ini khusus dibaca oleh barisan guru besar saja"], ans: 1 },
+                { q: "6. Teks berjudul 'Krisis Air di Balik Layar AI' masuk kategori teks artikel ilmiah karena didasari oleh...", options: ["Fakta fenomena dunia (kebutuhan air pendingin komputer server) dan bukan rekayasa mitos belaka", "Cita-cita pembuat robot masa depan", "Cerita pendek pahlawan super", "Ilusi optik pengarang semata"], ans: 0 },
+                { q: "7. Dari sisi sudut pandang 'penulis', salah satu tujuan pembuatan teks artikel adalah untuk...", options: ["Sarana mempublikasikan gagasan atau pemikiran hasil tinjauan dari suatu permasalahan secara logis-sistematis", "Hanya sekadar menghabiskan sisa uang jajan harian", "Berlomba-lomba mendapatkan gelar adat di daerahnya", "Menyembunyikan informasi berharga dari pengetahuan publik"], ans: 0 },
+                { q: "8. Untuk menghindari teks terasa kaku, artikel (seperti teks Air AI) ditulis dengan gaya...", options: ["Baku, dingin, tanpa emosi sama sekali", "Penyampaian informatif, terstruktur secara sistematis (runtut), namun bahasa tetap luwes", "Menggunakan bahasa tubuh", "Dipenuhi teka-teki logika yang sangat ruwet"], ans: 1 },
+                { q: "9. Di antara daftar berikut ini, manakah yang BUKAN merupakan acuan valid untuk menyusun artikel bermuatan fakta sains?", options: ["Laporan jurnal akademis dan rilis resmi institusi pemerintah", "Wawancara langsung dengan pakar kompeten", "Pesan suara misterius di grup pesan instan (WhatsApp) yang tak jelas siapa pengirim aslinya", "Buku teks yang ditulis oleh ahlinya"], ans: 2 },
+                { q: "10. Agar tulisan artikel diminati, topik ide yang dikandung sebaiknya harus...", options: ["Telah usang atau peristiwa ratusan abad silam", "Merespons isu kontekstual terkini (relevan dengan permasalahan hidup masa kini)", "Bersifat abstrak, tidak nyata bentuk fisiknya", "Murni tentang rahasia operasional militer"], ans: 1 }
+            ],
+            2: [
+                { q: "1. Apabila kita telaah struktur pembangunnya, kerangka teks artikel secara urut yang lazim dipedomani terbagi menjadi 3, yakni...", options: ["Pendahuluan, Penjelasan, Akhir", "Pernyataan Pendapat (Tesis), Argumentasi, Reiterasi (Pernyataan Ulang)", "Kepala, Badan, Ekor Berita", "Prolog, Klimaks, Epilog Drama"], ans: 1 },
+                { q: "2. Bagian struktur yang ditaruh di awal, bertugas membuka wacana atau menguraikan isu aktual sebagai landasan (pijakan) permasalahan, disebut...", options: ["Argumentasi Isi", "Reiterasi", "Pernyataan Pendapat atau Tesis", "Kata Pengantar Redaksi"], ans: 2 },
+                { q: "3. 'Komputer sistem AI memproses miliaran data nonstop. Hal itu memicu suhu panas ekstrim sehingga pabrik menyedot 5 juta liter air tiap hari demi pendinginan.' Data faktual tersebut diletakkan di struktur...", options: ["Glosarium Teks", "Argumentasi (Pembeberan Fakta)", "Pernyataan Ulang / Simpulan Penutup", "Sampul Buku"], ans: 1 },
+                { q: "4. Reiterasi (Pernyataan Ulang) merupakan muara atau titik akhir dari sebuah artikel. Apa misi utamanya?", options: ["Melontarkan kalimat kunci untuk merangkum seluruh pembicaraan menjadi simpulan/harapan yang menancap pada benak audiens", "Mengulang lagi pengetikan semua huruf dari awal persis sama 100%", "Bercerita riwayat hidup pribadi si penulis dan keluarganya", "Menampilkan rumus algoritma komputer secara penuh"], ans: 0 },
+                { q: "5. Mengapa penempelan elemen visual, diagram, atau <em>Chart</em> (grafik) data begitu bernilai pada bagian Argumentasi?", options: ["Hanya sekadar aksesoris untuk membuat laman web berwarna", "Untuk mempersingkat penyajian angka statistik/tren yang rumit agar lekas ditangkap akal sehat pembaca secara visual", "Sebagai upaya menutupi tulisan yang miskin data", "Supaya pembaca merasa pusing melihat garis-garis"], ans: 1 },
+                { q: "6. Jika bagian 'Argumentasi' dibuang habis dari tubuh teks artikel ilmiah populer, maka dampaknya bagi keutuhan wacana adalah...", options: ["Artikel tersebut jadi lebih cepat dibaca dengan menyenangkan", "Tulisan kehilangan jantung intinya sebab tak ada paparan kajian, tak ada penjabaran fakta, dan lenyapnya pembuktian logis masalah tersebut", "Halaman artikel berganti wujud secara otomatis menjadi bait puisi melankolis", "Kualitas ilmiahnya tiba-tiba meningkat tajam 300%"], ans: 1 },
+                { q: "7. Mengapa Pernyataan Pendapat (Tesis) memiliki andil strategis memancing rasa penasaran audiens?", options: ["Karena ia berada di panggung utama baris terdepan (pembuka) dan biasa mencakup pancingan (hook) fenomena isu yang mengejutkan/akrab dengan keseharian", "Karena tesis selalu dibubuhi gambar meme lelucon anak sekolah", "Sebab ia disembunyikan di lembar paling belakang", "Sebab berisi angka puluhan triliun rupiah yang akan diberikan cuma-cuma"], ans: 0 },
+                { q: "8. Di saat seorang jurnalis mengetik ruang Argumentasi seputar kekeringan air, kaidah hakiki yang pantang dilanggar adalah...", options: ["Tetap mengupas keping-keping isu secara faktual serta sanggup menjaga obyektivitas opini berdasarkan data", "Meyematkan sebanyak mungkin humor bergenre kasar", "Menulis menggunakan alfabet yang tak eksis di bumi", "Menolak mempercayai segala fakta yang ada (anti-sains)"], ans: 0 },
+                { q: "9. Kata 'Sistematis' merupakan denyut nadi ciri teks artikel. Artinya...", options: ["Teks dikerjakan sesuai urutan struktur hierarkis tertentu yang saling mengait antarparagraf", "Naskah boleh dibaca bebas terbalik melompat dari baris bawah langsung menuju puncak atas", "Total ukuran font dari kata ke kata harus disamakan diameternya", "Tak memiliki penggunaan tata tanda baca titik maupun koma sedari mula hingga tamat"], ans: 0 },
+                { q: "10. Sang penulis lantas menegaskan permohonan agar raksasa teknologi berjanji merancang pendinginan hemat air sebelum terlambat. Porsi kalimat ini sah ditempatkan pada...", options: ["Tesis awal cerita", "Tengah-tengah tabel rujukan", "Pernyataan Ulang (Reiterasi) sebagai penutup manis / ajakan kelestarian alam", "Celah margin halaman kertas sempit"], ans: 2 }
+            ],
+            3: [
+                { q: "1. Sebutan bagi perspektif atau pandangan unik sang penulis atas suatu fenomena di dalam teks yang dilandasi oleh fondasi logika disebut sebagai...", options: ["Kenyataan hukum gravitasi fana", "Opini Subjektif/Gagasan rasional", "Aksioma penipuan sistematis", "Pengukuran meteran presisi tinggi"], ans: 1 },
+                { q: "2. Bedah perbedaan esensial dari poros Artikel dibandingkan Jurnal Ilmiah dari kaca mata <em>gaya penulisan dan sasarannya</em>...", options: ["Keduanya kembar identik dalam balutan kata gaul", "Artikel bersolek lebih santai, komunikatif-menghibur untuk umum; sedang Jurnal membentengi diri dengan bahasa kaku/formal-baku eksklusif di hadapan khalayak ilmuwan", "Jurnal dicetak dalam secarik daun lontar kuno", "Tidak ada satu pun ahli bahasa yang tahu perbedaannya"], ans: 1 },
+                { q: "3. 'Grafik panel BMKG menunjukkan temperatur Bumi melonjak hingga 1,5 derajat Celcius.' Penggalan frasa di atas ialah representasi...", options: ["Fakta Objektif terukur", "Opini Penulis iseng semata", "Dongengan sebelum terlelap", "Sebuah Konspirasi"], ans: 0 },
+                { q: "4. Salah satu dinding pemisah tegas: Penulis dari sepotong 'Jurnal Ilmiah' lazimnya dituntut sebagai..., sementara pembuat 'Artikel Publik' bisa saja siapapun asalkan ia kompeten.", options: ["Anak jenius panggung komedi", "Seorang Ahli yang kredensial akademiknya diakui pada bidang studi itu", "Robot kecerdasan semu mandiri", "Seseorang yang tunawisma namun pandai bernyanyi"], ans: 1 },
+                { q: "5. Mengkritisi nilai kedalaman (depth) sebuah literasi. Manakah jenis pustaka yang menduduki strata tertinggi akan proses penelitian berat dan mendalam?", options: ["Pojok ulasan Blog pribadi iseng", "Teks Artikel Ringan di koran mingguan lokal", "Jurnal Penelitian Ilmiah terbitan kampus bereputasi top", "Insta-story keluh kesah kawan karib"], ans: 2 },
+                { q: "6. Publikasi teks Jurnal Ilmiah wajib melewati saringan yang sangat alot dan berlapis oleh kawanan pakar setara (Ahli Bidang/Reviewer) guna menyeleksi naskah. Hal semacam ini jarang dipraktikkan pada level...", options: ["Ensiklopedi Britanica", "Teks UU Tata Negara", "Tulisan Artikel Umum / Ringan portal berita", "Buku Tesis Magister Doktor"], ans: 2 },
+                { q: "7. Pola tindak seorang pelajar kritis kala berjumpa dengan berita sensasional sains (contoh: air lenyap diganti angin) melintas di jejaring lini masa ialah...", options: ["Semangat mengedarkannya ke jaringan sanak saudara biar gegap gempita", "Menguji sahihnya kabar (Cross-check) dengan menelusuri ke pangkalan web kredibel dan situs sains otoritatif", "Sujud memercayainya secara babi-buta 100% hari itu juga", "Histeris mendadak lalu lari menjerit"], ans: 1 },
+                { q: "8. Jika sehelai teks artikel opini nekat diketik melompati kaidah kebenaran, ketiadaan rujukan sitasi, serta mencomot nama palsu tak dikenal, kamu mendeteksinya sebagai...", options: ["Kebenaran Sejati Hakiki Akhir Zaman", "Jurnal Sains Nobel tingkat Internasional", "Rangkaian Informasi Sesat (Misinformasi / Hoaks) tanpa akar verifikasi logis", "Sebuah Analisis Ahli paling mutakhir masa depan"], ans: 2 },
+                { q: "9. Memang benar referensi wajib disisipkan penulis teks artikel. Akan tetapi bila kita hadapkan berdampingan (apple-to-apple), kuantitas deretan referensi tulisan artikel lazimnya akan...", options: ["Sangat dominan, berlembar-lembar melebihi panjang isi jurnalnya", "Lebih pendek/tidak seterbuka dan setebal barisan kepustakaan pada Jurnal Ilmiah raksasa", "Tak memiliki sejentik titik referensi karena diyakini membuang jatah tinta tulisan cetaknya", "Semuanya berisi gambar karikatur orang tertawa lebar"], ans: 1 },
+                { q: "10. Bekal ketajaman akal (kritis memisahkan fakta dari racun opini palsu) sangat krusial dipeluk oleh tunas muda agar...", options: ["Siap menjadi angkuh lalu memaki rekan debat hingga kalah pamor", "Terlindungi daya nalarnya saat dihujam disinformasi berpayung 'mitos sains tipuan', sekaligus handal mengevaluasi bobot argumen narasi orang lain", "Dijauhi mata pelajaran hitung-hitungan eksak Biologi selamanya", "Mendulang kekayaan instan ribuan koin dari internet jahat"], ans: 1 }
+            ],
+            4: [
+                { q: "1. Varietas karya teks yang bertumpu menajamkan sisi *Skill* keterampilan (praktik) dan menguraikan tata laksana perakitan / tutorial (contoh judul 'Cara Merawat Akar Bibit Bunga') digolongkan pada...", options: ["Artikel Hiburan Ringan", "Artikel Opini Kolumnis", "Artikel Analisis Kajian Ahli", "Artikel Praktis"], ans: 3 },
+                { q: "2. Artikel ini hadir layaknya hembusan angin semilir. Muatannya enteng, menyisipkan rona kejenakaan tanpa menagih otot kening berkerut ekstra namun esensinya konstan informatif. Itulah karakter ragam...", options: ["Artikel Praktis Pertukangan", "Artikel Ringan", "Jurnal Jeroan Makro Ekonomi Akademis", "Buku Tesis Program Gelar Ph.D"], ans: 1 },
+                { q: "3. 'Telaah Kritis Dampak Kecanduan Gawai Atas Morbiditas Mata' yang diudarakan secara mendalam beserta opini lurus oleh seorang wartawan / kolomnis senior di pojok redaksi surat kabar, mencirikan spesies teks...", options: ["Artikel Opini / Editorial Tajuk", "Artikel Tips Ringkas Bikin Kopi Instan", "Buku Saku Resep Kue Lebaran", "Manga Komik Cerita Cinta Remaja"], ans: 0 },
+                { q: "4. Spesies tulisan manakah yang dipandang paling 'Sakral / Serius' karena dihidangkan merujuk laporan sistematis riset, taat bertata bahasa sangat baku ala skripsi saintifik, namun teringkas pada lembar wacana ilmiah?", options: ["Artikel Recehan Pinggir Kota", "Artikel Praktis Kumpulan Jalan-Jalan", "Artikel Analisis Ahli (Artikel Ilmiah Formal)", "Lembar Harian Diary Masa Kecil"], ans: 2 },
+                { q: "5. Melancarkan serbuan curah gagasan seketika (Brainstorming) beramai-ramai pada titik nol penulisan bermanfaat mutlak buat...", options: ["Mendengkur nyenyak di sudut sejuk bilik ruang kerja pribadi", "Mengeruk segunung khazanah ide, lantas perlahan dipersempit menyaring satu benih teramat potensial", "Terengah-engah membungkuk menghafalkan rentetan konjungsi silang", "Bubar membatalkan agenda penulisan bersama tanpa alasan logis"], ans: 1 },
+                { q: "6. Lontaran subjek tajuk 'Lautan Plastik Mengelilingi Planet: Menengok Ajal Penghuni Antariksa' teramat memesona tatkala dirajut wujud fisiknya sebagai...", options: ["Teks Panduan Cara Menjahit Baju Antariksa Mandiri", "Teks Artikel Sains Populer (mengupas kepingan polemik alam raya dengan lisan ramah warga)", "Laporan Audit Akuntansi Jurnal Kas Negara", "Skrip Skenario Drama Sinema Tangisan Air Mata"], ans: 1 },
+                { q: "7. Darimana mata air inspirasi untuk menimba sumber-sumber otentik tulisanmu sanggup ditambang, KECUALI di zona gelap yakni...", options: ["Laman Website Institusi Pendidikan Resmi / Portal Jurnal Kredibel", "Lobi Diskusi / Wawancara Eksklusif dengan Para Pakar Ahli Praktisi", "Rangkuman Buku Kualitas Wahid Karangan Ilmuwan", "Desas-desus celoteh keliru tanpa jejak literatur paman entah siapa di sudut pojok angkringan"], ans: 3 },
+                { q: "8. Andai dirimu menggubah serentetan kalimat '5 Protokol Menghemat Kucuran Keran saat Menggosok Gigi di Pagi Hari', ini adalah cerminan presisi perihal...", options: ["Artikel Opini Geopolitik", "Artikel Praktis (<em>How-to</em>)", "Artikel Analisis Makro-Ahli Molekuler", "Liputan Hoaks Televisi Misteri Supranatural"], ans: 1 },
+                { q: "9. Alasan mengapa penetapan sasaran target demografi populasi 'Siapa Pembaca Karyaku?' dipatok semenjak embrio paragraf perdana belum ditarik adalah...", options: ["Supaya kita luwes menentukan laras pilihan diksi kosakata, derajat kerumitan bahasa, dan menyesuaikan kemasan jenis tulisannya agar seirama memikat jantung mereka", "Agar percetakan bergegas mengebut tinta pabrik siang malam", "Demi formalitas menyumpal selembar celah kosong pada rubrik usang koran murahan", "Biar kita bisa menarik pundi-pundi tarif harga selangit pada naskah yang miskin informasi"], ans: 0 },
+                { q: "10. Praktik haram dan pantang dikerjakan dalam proses penggalian bahan literatur maya (internet), suatu kejahatan yang kelak mencoreng integritas akademik selamanya, adalah...", options: ["Sudi meluangkan letih membaca perbandingan lima hingga sepuluh opini beda haluan", "Tindakan amoral Plagiarisme total (Aksi nekat menduplikasi utuh ketikan buah akal milik insan asing lalu diakuisisi sebagai mahakarya pribadi di etalase nama sendiri tanpa menunjuk sang pionir)", "Merekam notulensi omongan cemerlang ahli geologi pada buku saku", "Menyalin bagan kurva indeks inflasi udara milik web Badan Pusat Statistik"], ans: 1 }
+            ],
+            5: [
+                { q: "1. Satuan leksikal yang diperbantukan untuk menajamkan makna suatu kata sifat/kerja dalam kalimat demi mendulang keperkasaan argumen dan kental meyakinkan logika pembaca, umpama 'sangat, acapkali, condong lebih, terbilang sering' secara keilmuan bahasa dijuluki...", options: ["Konjungsi Pembelah Batas", "Adverbia Keterangan (Penegas)", "Pronomina Nominatif Semesta", "Vokal Rangkap Hipotonis Belakang"], ans: 1 },
+                { q: "2. Menilik buku tata rambu kebahasaan PUEBI teks, jejeran kata sambung seperti <em>'karena itu, berbekal kenyataan tersebut, agar, oleh sebab itu'</em> bertengger solid di ranah...", options: ["Konjungsi Kausalitas (Tali Sebab-Akibat Peristiwa)", "Adverbia Keterangan Masa Lalampau", "Konjungsi Rentetan Penjumlahan Acak", "Partikel Sandang Makhluk Persona"], ans: 0 },
+                { q: "3. 'Pertama-tama, masyarakat luas kudu memangkas energi boros listrik. Selanjutnya, barulah mendayagunakan daya surya buatan.' Terma 'Pertama-tama' & 'Selanjutnya' menahbiskan jati dirinya selaku lakon...", options: ["Lidah Konjungsi pemantik secercah Harapan Kosong belaka", "Tali temali Konjungsi Kausalitas fatalisme dunia", "Konjungsi Urutan Waktu (merangkai gradasi argumentasi pilar paragraf sistematis-kronologis)", "Seruan Adverbia Keterangan Frekuensi Suara Bernada Tinggi"], ans: 2 },
+                { q: "4. Meracik kosa-kata nan cerdik bin efektif di hamparan karangan opini krusial diindahkan karena mengusung misi vital...", options: ["Memaksa jalinan frasa menjelma ruwet bertumpuk bagai gulungan benang kusut agar ditakuti khalayak ramai", "Bius pesona literasi terangkat drastis, naskah hidup dinamis, efektif membujuk dan memenangkan perang logika pikiran si audiens pemegang buku", "Cuma ajang gagah-gagahan biar panjang meteran spasi gulungan naskahnya bertambah tebal", "Memenuhi tenggat barisan pualam pica-kertas mesin tik kantor secara pas seukuran pias margin"], ans: 1 },
+                { q: "5. 'Sebaiknya kita tak putus-putusnya mengampanyekan matikan saklar listrik di balai warga, <em>supaya</em> derajat keparahan cuaca terpanggang bumi lekas menyurut asri.' Rel konjungsi 'supaya' mewujudkan makna luhur atas sebuah...", options: ["Secercah Harapan / Cita-cita Perbaikan Mutu Masa Depan", "Hujatan Penolakan Total atas ide orang beda benua", "Catatan Titik Waktu Jeda Detak Jarum Jam Putaran Analog", "Titah Otoriter Penyerahan Syarat Upeti Absolut Tanpa Ampun"], ans: 0 },
+                { q: "6. Terlepas dari keharusan mencetak ragam diksi aduhai nan efektif merayu audiens, rambu merah mematikan sewaktu merakit esai genre 'ilmiah-populer' adalah malapetaka berupa keteledoran...", options: ["Konsisten beralur menggunakan kosa pergaulan dialek Indonesia yang ramah sapa nan membumi komprehensif", "Mencekik nalar audiens publik lewat penjejalan kosa Jargon Akademis (istilah saintis langka tingkat dewa) yang ditelantarkan yatim-piatu tanpa kucuran klarifikasi penjelasan apa-apa", "Memasang tiang pondasi konjungsi serangkai pengungkit argumentasi wacana perikemanusiaan", "Berani lancang memaparkan data statistik murni petikan dari jurnal kementerian pusat secara terang-benderang terbuka"], ans: 1 },
+                { q: "7. Jembatan pamungkas pra-cetak (fase Revisi/Swasunting/Editing final) melarang lekas merasa congkak puas diri. Lensa periksanya teropong ke arah hal mendesak seperti...", options: ["Keserasian spektrum paduan warna cat <em>cover</em> sampul map binder luar tanpa hirau halaman muka ketik", "Akurasi pelurusan makna frasa ambigu, kekokohan formasi 3 Struktur Baku (Tesis-Argumentasi-Reiterasi), sekalian perburuan berantas hama salah ketik ejaan huruf (typo malpraktik mekanis)", "Memastikan seberapa berat gramasi (ketebalan) helai serpihan daun kertas impor dari lautan seberang", "Lomba menghitung panen berlipat ribuan taburan angka 'Like & Share' pemuja dari seantero penjuru sosial media"], ans: 1 },
+                { q: "8. Sewaktu kamu berminat memompa kuat suntikan dosis fakta argumentasi dengan membedah sebuah kasus empiris penunjang teori, tali konjungsi paling cocok berirama serasi didendangkan berupa...", options: ["Maka dari sanalah sebab akibat pertumpahan darah mengucur", "<em>Misalnya demikian</em>, selaras <em>sebagai contoh nyata peristiwanya</em> di bentang wilayah anu...", "Sekonyong-konyongnya urutan permulaan dari hulu kawah candradimuka", "Bila semata agar perihalan demikian bisa terwujud lekas instan"], ans: 1 },
+                { q: "9. '<em>Walaupun</em> wujud mikroskopis mutasinya tak tepergok radarnya selaput mata biasa telanjang, daya rusak varian virus anyar itu mutlak menyapu bersih populasi bernapas.' Akar konjungsi 'Walaupun' merekat kokoh memperagakan aliansi perihal unsur...", options: ["Klausa Penjumlahan (Peleburan Aditif Unsur Ganda Solid Sejahtera)", "Ikatan Pertentangan (Konsesi Friksi Realita Beda Kutub Keras Menyeruak)", "Jeratan Syarat Garansi Kondisional Berlapis Prosedural Kaku", "Kaidah Harapan Impian Pengharapan Lirih Rintihan Sanubari Sang Peminta"], ans: 1 },
+                { q: "10. Penobatan paripurna bagi siklus maraton seorang penulis esai artikel populer tatkala mahakarya tersebut diproklamasikan 'Final Selesai Digarap Utuh' merujuk masa momen di saat...", options: ["Sebutir pena baru menggaris-gurat kata-kata perawan cikal-bakal sebongkah Tesis permulaan senja itu", "Draf rampung kokoh tegap seutuhnya dari atap struktur ke lantai, lolos seleksi bedah revisi teliti (saring adverbia ejaan tata frasa PUEBI presisi tinggi), dan divonis matang mumpuni layak rilis ke ruang publik semesta loka", "Baru terbersit imajinasi sekilas sinar ide emas berseliweran memantul di kedalaman batok benak tengkoraknya", "Segepok berbendel-bendel manuskrip naskah usang raib lenyap menguap tertiup gulungan badai angin beliung malam badai tak bersisa wujud aslinya sama sekali di pelupuk bumi"], ans: 1 }
+            ],
+            6: [
+                { q: "1. Keutamaan perayaan penutup fase 'Refleksi Akhir' bagi arsitek penulis usai merampungkan merangkai menara bait tulisannya, tercurah guna maksud utama...", options: ["Pensiun gulung tikar pantang menyentuh belanga prosesi belajar tulis seumur jasad bersemayam menjejak fana", "Menyempatkan napas evaluasi secara sadar kritis-intelek atas tinggi rendah bobot kualitas kepingan mahakaryanya sendiri (akurasi keutuhan tiang kerangka struktur, ketajaman mata parang sintaksis, kesahihan benteng-benteng fakta otentik) jelang disodorkan pada mimbar jagat penghakiman peradaban massa", "Membakar sirna saksi bisu keseluruhan gulungan draf mentah dan lembar catatan coretan cikal riset naskah pada api unggun", "Main copas sadap jalan tol menjiplak borongan hasil panen keringat tumpah karya esai paripurna milik kerabat seperjuangan"], ans: 1 },
+                { q: "2. Lampu hijau tolok ukur indikasi pamungkas bahwa gerbong panjang kerangka teks artikel sainsmu tuntas & <strong>SIAP TAYANG</strong> membumbung lepas menuju langit panggung penerbitan ditandai sinyalemen...", options: ["Konstruksi anatominya prima (runtutan sekuensial Tesis-Argumentasi-Reiterasi terbangun mumpuni), pilar data rujukan mutlak lolos validasi kebenaran tak terbantahkan, serta estetika kaidah gramatika bahasa telah mapan di posisi rel baku", "Jumlah kelipatan halamannya tumpah ruah melampaui rentang batas minimal ekuivalen 100 lembar padat tak berjarak sedemikian rupa", "Seluruh lekukan barisan kalimat per-paragraf diwajarkan dimonopoli seragam mengenakan jubah aksara kapital raksasa huruf tegak semata sepanjang hayat wacana", "Diketik acak dengan teknik gila seraya katup pelupuk panca indera kelopak mata si penciptanya tersegel tertutup buntu segel lakban hitam murni seutuhnya di ambang kegelapan mutlak"], ans: 0 },
+                { q: "3. Sejatinya takdir esensi terpendam dalam DNA seutas pita wacana genre teks artikel populer mencerminkan perpaduan aliansi elegan di persimpangan ranah esensial menyangkut...", options: ["Harmoni padu sejalan perangkai simpul Fakta sains saintifik terukur kaku dipeluk lentur oleh bingkai sentuhan Estetika Opini Subjektif rasional si penulis demi suguhan sistematis bermutu elegan", "Tafsir taklid murni reka adegan khayalan halusinasi fiktif bin mitos takhta antah berantah alam roh", "Kumpulan silsilah kisah legenda kancil fabel pitutur nenek leluhur dipadu epos naskah tutur sastra teater klasik kuno lakon boneka", "Reruntuhan baris-berbaris angka algoritma numerik matematis super kaku tanpa kucuran secangkir sentuhan getar urat nadi untaian narasi sastrawi keagungan frasa puitis bahasa manusiawi di sekeliling penjurunya sama sekali"], ans: 0 },
+                { q: "4. Curahan dividen / manfaat nyata mempublikasikan cetusan gema pemikiran tajuk esai opinimu via etalase majalah dinding (Mading) lobi aula sekolahan beresonansi kuat positif bagi dirimu seumpama...", options: ["Menjelma sesosok pribadi jemawa takabur congkak menjulang tinggi-tinggi angkuh egois mengerdilkan merendahkan kasta mahakarya rendahan milik liyan kawan sesama perintis sekolah", "Ajang gelanggang asah raut pisau empati berkeberanian serta pilar pondasi kepercayaan berani bersuara membagi mutiara pencerahan batin, menjaja permata edukasi kilau pesona fakta-fakta keilmiahan sejati kepada sanubari orang lain penikmat pelintas koridor", "Menguras kosong saldo rekening simpanan tunai celengan jatah saku bulanan berujung bangkrut miris semata cuma buat membakar ludes lembaran uang mendanai mahalnya argo bayar pita spanduk vinil raksasa baliho promosi cetak jalanan tak ada faedah arti berguna secuilpun buat peradaban ilmu sains ini", "Sukses besar-besaran mengundang celaka bencana ditegur dipanggil masuk ruang pimpinan hukuman kepala madrasah penguasa tunggal pendidikan karena disangka merusak properti tata dinding estetik sekolah secara gegabah semena-mena brutal dan kasar"], ans: 1 },
+                { q: "5. Manakala handai tolan sekelas kelimpungan pusing tujuh keliling saat memindai paragraf-paragraf untaian rantai argumen draf mentah esaimu, letak mur baut krusial utama yang wajib buru-buru seketika disetel balik di-revisi teliti adalah celah soal...", options: ["Kapasitas kuota memori ruang daya tampung kejeniusan rasio akal otak sang penganalisis kawanan teman beda kasta ras dan asal genetik spesies tersebut sebetulnya dangkal dan bodoh luar biasa", "Peta navigasi cara dirimu menghidangkan racikan kata. Barangkali takaran resep pilihan bongkahan istilah kosa kata spesialis saintis terlampau sakti mandraguna, miskin jembatan komunikasi humanis sehingga sukar dicerna sel-sel perut kesadaran kalbu publik awam jelata", "Komposisi pantulan gradasi rona balutan tinta printer yang agaknya kurang menyemburat kelam tebal menyala menyilaukan mata batin merobek selaput tajam ke ruang retina indra visual di atas punggung kertas kanvas", "Menyalahkan jarum detik momentum durasi peredaran semesta. Kemungkinan sial ia membacanya tatkala fajar lelah mengantuk dan belum mandi cuci muka atau usai kelaparan seharian penuh suntuk dan kurang gizi kalori"], ans: 1 },
+                { q: "6. Artikel praktis serta kembar siam-nya artikel ringan, padu-padan setara melayani hajatan kebutuhan panggung target pasaran pirsawan massa umum terbuka (seluruh khalayak manusia maya maupun fana ragawi nyata bumi merdeka ini). Titik simpul pedang pisau kunci jurus sakti pendiferensial mutlak antara wujud kedua spesies karya dwitunggal tunggal ika itu semata-mata berpijak menyandarkan identitas eksistensinya tegak berdiri di titik...", options: ["Artikel praktis dominan dijejali sesak memborbardir sarat instruksional panduan urutan tahapan <em>how-to</em> kepiawaian mengolah keahlian keterampilan, kontras silang dengan saudaranya sang entitas artikel ringan yang lebih asyik santuy khusyuk bergelut menyoroti dinamika selang seling ritme fenomena problematika rutinitas insan harian nan ramah membahagiakan santai belaka", "Eksistensinya tak pernah benar-benar ada pemisahnya, sama belaka seutuhnya setitik dempet seperti layaknya tetes kembar tirta hujan membelah diri sama rasa sama rata dalam cawan kehampaan nihil", "Status hierarkinya kasta bumi-langit tajam diskriminatif menyakitkan perih di mana spesies artikel praktis hanya boleh suci haram dibaca selain kaum ningrat gelar mahaguru besar jubah kebesaran profesor universitas dewa-dewi galaksi bimasakti, sementara kerabat malangnya sang artikel ringan dilempar buang khusus sajian bayi suci baru merangkak tangis di ayunan bedong kain sarung emaknya lahir", "Sebab musabab varian entitas artikel praktis itu sejak azali diketik memutar otak dengan pedoman tata cara bahasa kasta tertinggi kuno prasasti daun lontar purbakala sandi alien rumit yang mustahil ditembus kecerdasan panca indra manusia modern"], ans: 0 },
+                { q: "7. Persenjataan tajam ghaib mahkota mutiara 'Berpikir Logis Kritis' sisa endapan warisan keramat studi modul literasi ini bertuah sangat mujarab nan ampuh dikerahkan membentengi peradaban di abad digital masa kini bilamana dipakai demi kepentingan luhur memfilter...", options: ["Keasyikan berlarut durasi lupa daratan tenggelam candu menatap lekat-lekat pancaran radiasi silau layar gawai demi menamatkan rentetan turnamen perlombaan game maya hingga fajar terbit ufuk", "Memindai teliti sinar x-ray akurasi rekam jejak sertifikasi mutu bobot reputasi legitimasi sumur mata air muara pusat komando rujukan berita web jurnal situs penggelinding isu (apakah berpusat resmi sahih valid bergelar doktor akademis kementerian sentral), supaya sel-sel neuron akal tak lekas hangus ditelan muslihat daya tipu iblis narasi manipulasi disinformasi sihir wabah hoaks masif jahat", "Mengatur jadwal biologis berhibernasi terlelap merebahkan jasad berkalung dengkur nyenyak melintasi putaran sang surya berganti kalender waktu beribu purnama lamanya tanpa sela tanpa jeda sejenak", "Mematikan seluruh tuas gardu pasokan induk listrik sinyal kabel komunikasi lalu lintas sirkulasi maya jagat internet benua dan planet bumi seluruhnya seketika berhenti lumpuh total beku tak bernapas seketika detak denyut nadinya"], ans: 1 },
+                { q: "8. Sewaktu berselancar ria menyusun naskah kaidah kebahasaan, untuk mendobrak penegasan bahwa malapetaka krisis kekeringan hausnya bumi itu teramat mengerikan dan konkrit faktanya, maka pujangga penulisnya sangat amat dianjurkan menggempur sanubari pembaca merajam argumennya menyuntikkan rentetan senjata mesiu frasa <em>Adverbia</em> pembius penegas makna kalbu, misal wujud kosakatanya seperti serbuan amunisi kata...", options: ["Atau, Dan, Lagipula, Bilamana, Walaupun", "<em>Sangat! Sebagian besar! Selalu! Teramat! Niscaya pasti berulang sering kali acap kali memukul kalbu!</em>", "Kemungkinan, Barangkali, Kalau, Andaikata, Seumpama dewa sudi berkehendak", "Pertama, Di urutan ke dua, Selanjutnya, Pamungkas, Penghujung senja"], ans: 1 },
+                { q: "9. Tes uji nyali ingatan: Rangkaian susunan barisan konvoi tulang punggung kerangka hierarki formasi cetak biru konstruksi anatomi arsitektur pengemasan teks artikel genre saintifik empirik ideal nan utuh presisi mutlak menurut dekrit dewan pakar linguistik bahasa menuntut ketaatan susunan tata urutan baku suci bertingkat dari pintu masuk hingga gerbang keluar berupa pilar-pilar batu penjuru yakni deretan suci...", options: ["(1) Titah Deklarasi Pendirian Opini Sentral/Tesis Pembuka Jagat - (2) Barikade Argumentasi Pembeberan Data Faktual Analitik Logika - (3) Reiterasi Pengulangan Simpulan Pengikat Simpul Janji Kesetiaan Penutup Manis Pembekas Rasa Kalbu Pembaca", "(1) Pendahuluan Selayang Pandang Pengantar - (2) Katalog Senarai Urutan Kepustakaan Daftar Daftar Acuan Kutipan Pakar Peneliti Terdahulu - (3) Etalase Biografi Narasi Perjalanan Kisah Cinta Riwayat Hidup Panjang Lebar Si Pengetik Naskahnya", "(1) Opini Subjektif Celoteh Liar Belaka Khayalan Asal Bunyi Tembak Tebak Bebas - (2) Karangan Fiksi Sandiwara Drama Kepalsuan Maya - (3) Teror Hasutan Hoaks Fitnah Keji", "(1) Penarikan Simpulan Reiterasi Acak Belakang Penutup Epilog - (2) Titah Tesis Penegas Kalbu Jantung Ide Isu di Urutan ke Dua - (3) Laskar Deretan Argumentasi Inti Dijejalkan ke Gerbang Pintu Terakhir Paling Hujung Pembuangan Akhir"], ans: 0 },
+                { q: "10. Sebongkah batu permata intan berlian hikmah pesan paripurna luhur filsafat kebijaksanaan terdalam yang layak disarikan direnungi khusyuk ke alam bawah sadar terpetik lewat perantara sang wahana studi pelacakan teks artikel menyangkut tema epik 'AI sang Raksasa Silikon Haus Meneguk Kering Habis Kucuran Air Kehidupan Kita' di bentangan sepanjang napas proses pengembaran laku belajar modul kelas kali ini bergelimang nilai menyuarakan bisikan pesan moral sejati perihal petuah emas bahwa...", options: ["Kapasitas volume kubikasi daya cadang rahim simpanan kantong air tawar bening segar alami bernaung melimpah meruah di sekujur lekuk rona bentang benua terhampar di atas putaran bola planet daratan keping bumi raya tata surya bimasakti kepunyaan umat kita per hari ini dipandang senantiasa membanjir membekak ruah awet abadi lestari langgeng tak akan pernah sudi kenal kata aus surut menyusut pupus kering tiris mati seujung zarah pun kendati dijajah dirampok dikuras boros sesuka-suka nafsu hati oleh makhluk apa jua bentuk entitas rupa peradabannya ke depan nanti", "Kemajuan roda kereta teknologi digital tak peduli secerdik sedewa apa ras otak sintesis algoritma kecerdasan baut mesin silikon maya berkedok jagat piksel dimensi khayal buatan tersebut disembah melangit, mutlak selamanya niscaya selalu memikul seretan gerbong tagihan hutang konsekuensi rentetan rekam jejak tapak galian dampak luka tebasan wujud kausalitas fisik pada rona alam rupa ekologi teritorial ibu pertiwi terhampar meranggas di sekeliling radius habitat tempat napas manusia bersarang; Sebuah niscaya bahaya laten kasat mata yang sungguh patut harus sudi senantiasa diamati diteropong lensa pedas nyinyir dikritisi serentak secara masif berjemaah kepedulian global oleh barisan laskar ujung pena cendekia penulis pejuang peduli lingkungan kehidupan via untaian amunisi argumentasi bait narasi barisan karya keping literatur-literatur naskah artikel ilmiah empiris yang sanggup berdiri tegap sahih valid teruji obyektivitas takarannya bisa diandalkan pembuktian kejujuran datanya merobek kedok rahasianya terang-benderang pencerahan akal", "Komputer cip gumpalan algoritma setumpuk logam super canggih kecerdasan rekaan tangan manusia (AI) itu ternyata telah melampaui kutukan roh animisme hingga menetas berevolusi sekonyong wujud sah menjadi klasifikasi seutuhnya sosok sejenis ras makhluk hidup makhluk entitas fauna flora bernyawa berjiwa suci nan ajaib yang dengan harafiah murni gamblang kodrati penciptaannya secara alamiah seutuhnya sungguh-sungguh kuasa mendapati organ syaraf tubuh mesinnya itu menderita siksa rintihan cekat kehausan hebat tercekik kering rasa memilin mencekik di leher tenggorokan rahang mekanis logam baut baja titanium karatan miliknya jika lupa disiram gayung guyur sesajen ritual air tirta bening pagi buta", "Sebuah nubuat mistis kepastian bahwa tak sampai sebatas ujung hari kiamat besok pagi fajar merekah di ambang cakrawala, seluruh segenap totalitas rantai DNA ras populasi silsilah jutaan wajah miliaran jumlah serumpun spesies mamalia keturunan akar rumpun biologis umat ciptaan manusia berdarah daging kehangatan napas roh jiwa paru-paru ini mustahil terelakkan dipastikan akan sapu tumpas habis disapu mutlak tergantikan genosida musnah lengser keprabon tahta dari penguasa tunggal rotasi harian pucuk puncak rantai piramida rantai makanan digulingkan kudeta kejam direbut beralih tangan singgasananya ditaklukkan seutuhnya lunas tanpa tersisa ke tangan belenggu genggaman erat otoritas junta koloni tirani rezim kepalan tangan robot-robot ras monster peradaban alien antariksa hibrida artifisial super ultra maha cerdas tanpa nurani pemusnah segalanya dari langit tak terjamah di galaksi rasi bintang jauh seberang entah belantah tiada nama di luar tepian cakrawala semesta raya kelam tanpa bintang ujung mentari membusuk dingin merinding selamanya amien"], ans: 1 }
+            ]
+        };
+
+        let userScores = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
+        let currentAnswers = {1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}};
+
+        function initQuizzes() {
+            for(let i=1; i<=6; i++) {
+                renderQuiz(i);
+            }
+        }
+
+        function renderQuiz(kbId) {
+            const container = document.getElementById(`quiz-wrap-${kbId}`);
+            if (!container) return;
+            
+            let titleText = kbId === 6 ? "Post-Test (Uji Kompetensi Akhir)" : `Kuis Evaluasi Pemahaman KB ${kbId}`;
+            
+            let html = `<div class="glass-panel p-6 border-t-4 border-ai-500 mt-8 shadow-2xl relative fade-in">
+                <div class="absolute -top-4 right-4 bg-gradient-to-r from-ai-600 to-ai-400 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-ai-300/30">Wajib Dikerjakan</div>
+                <h3 class="text-xl font-heading font-bold mb-6 flex items-center gap-2">
+                    <i class="fa-solid ${kbId === 6 ? 'fa-award text-yellow-400' : 'fa-list-check text-water-400'}"></i> ${titleText} (10 Soal)
+                </h3>
+                <div class="space-y-6">`;
+                
+            quizData[kbId].forEach((item, index) => {
+                html += `<div class="question-block bg-gray-800/30 p-5 rounded-xl border border-gray-700/50" id="kb${kbId}-q${index}">
+                    <p class="font-semibold text-gray-100 mb-4 leading-relaxed">${item.q}</p>
+                    <div class="space-y-2">`;
+                    
+                item.options.forEach((opt, optIdx) => {
+                    html += `<label class="flex items-start gap-3 p-3 rounded-lg bg-gray-900/60 hover:bg-gray-700/80 cursor-pointer border border-transparent transition-all hover:shadow-md">
+                        <input type="radio" name="kb${kbId}-q${index}" value="${optIdx}" onchange="saveAnswer(${kbId}, ${index}, ${optIdx})" class="mt-1 accent-ai-500 w-4 h-4 shrink-0">
+                        <span class="text-sm text-gray-300 leading-tight pt-0.5">${opt}</span>
+                    </label>`;
+                });
+                
+                html += `</div>
+                    <div id="feedback-kb${kbId}-q${index}" class="mt-4 text-sm hidden font-medium transition-all duration-300"></div>
+                </div>`;
+            });
+            
+            html += `</div>
+                <button onclick="submitQuiz(${kbId})" class="mt-8 w-full bg-gradient-to-r from-ai-600 to-water-600 hover:from-ai-500 hover:to-water-500 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:scale-[1.01]">
+                    <i class="fa-solid fa-paper-plane mr-2"></i> Kumpulkan & Cek Nilai
+                </button>
+                <div id="result-kb${kbId}" class="mt-6 hidden text-center p-6 rounded-xl border-2 transition-all duration-500"></div>
+            </div>`;
+            
+            container.innerHTML = html;
+        }
+
+        function saveAnswer(kbId, qIndex, val) {
+            currentAnswers[kbId][qIndex] = val;
+        }
+
+        function submitQuiz(kbId) {
+            let score = 0;
+            const questions = quizData[kbId];
+            let allAnswered = true;
+            
+            questions.forEach((item, index) => {
+                const ans = currentAnswers[kbId][index];
+                const feedbackDiv = document.getElementById(`feedback-kb${kbId}-q${index}`);
+                feedbackDiv.classList.remove('hidden');
+                
+                if (ans === undefined) {
+                    allAnswered = false;
+                    feedbackDiv.className = "mt-4 text-sm px-4 py-3 rounded-lg bg-orange-900/40 text-orange-300 border border-orange-500/30 block flex gap-2 items-start fade-in";
+                    feedbackDiv.innerHTML = "<i class='fa-solid fa-triangle-exclamation mt-1'></i> <span>Kamu belum menjawab pertanyaan ini!</span>";
+                } else if (ans === item.ans) {
+                    score += 10;
+                    feedbackDiv.className = "mt-4 text-sm px-4 py-3 rounded-lg bg-green-900/40 text-green-400 border border-green-500/30 block flex gap-2 items-start fade-in";
+                    feedbackDiv.innerHTML = "<i class='fa-solid fa-check mt-1'></i> <span>Benar! Tepat sekali.</span>";
+                } else {
+                    feedbackDiv.className = "mt-4 text-sm px-4 py-3 rounded-lg bg-red-900/40 text-red-400 border border-red-500/30 block flex gap-2 items-start fade-in";
+                    feedbackDiv.innerHTML = `<i class='fa-solid fa-xmark mt-1'></i> <div>Kurang tepat. Jawaban yang paling benar adalah: <br><strong class="text-gray-200 mt-1 inline-block bg-gray-800/80 px-2 py-1 rounded">${item.options[item.ans]}</strong></div>`;
+                }
+            });
+            
+            if (!allAnswered) {
+                showToast("Oops! Ada pertanyaan yang belum dijawab. Lengkapi dulu ya!", "error");
+                return;
+            }
+            
+            const resultDiv = document.getElementById(`result-kb${kbId}`);
+            resultDiv.classList.remove('hidden');
+            resultDiv.classList.add('fade-in');
+            
+            if (score >= 80) {
+                resultDiv.className = "mt-8 text-center p-8 rounded-2xl bg-green-900/20 border-2 border-green-500/50 shadow-[0_0_30px_rgba(16,185,129,0.2)]";
+                resultDiv.innerHTML = `<i class="fa-solid fa-trophy text-5xl text-yellow-400 mb-4 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]"></i>
+                    <h4 class="text-3xl font-bold text-white mb-2">Nilai Kamu: <span class="text-green-400">${score}</span> / 100</h4>
+                    <p class="text-gray-300 text-lg">Luar biasa! Tuntas KKM.</p>`;
+                
+                // Sistem Buka Kunci (Unlock) Level Berikutnya
+                if (kbId < 6 && !unlockedTabs.includes(kbId + 1)) {
+                    unlockedTabs.push(kbId + 1);
+                    const nextTab = document.getElementById(`tab-${kbId + 1}`);
+                    // Hilangkan gembok dan beri animasi kedip
+                    nextTab.className = 'tab-inactive snap-center shrink-0 px-5 py-3 rounded-xl text-sm transition-all duration-300 flex items-center gap-2 shadow-[0_0_15px_rgba(249,115,22,0.5)]';
+                    nextTab.innerHTML = `<i class="fa-solid ${tabIcons[kbId + 1]}"></i> KB ${kbId + 1}`;
+                    
+                    resultDiv.innerHTML += `<div class="mt-4 inline-block bg-water-900/50 border border-water-500/50 text-water-300 px-4 py-2 rounded-lg font-semibold animate-pulse"><i class="fa-solid fa-unlock-keyhole mr-2"></i> Akses ke KB ${kbId + 1} Berhasil Dibuka!</div>`;
+                    
+                    showToast(`Akses Terbuka! Kamu sekarang bisa lanjut ke KB ${kbId + 1}.`, 'success');
+                }
+
+            } else {
+                resultDiv.className = "mt-8 text-center p-8 rounded-2xl bg-orange-900/20 border-2 border-orange-500/50";
+                resultDiv.innerHTML = `<i class="fa-solid fa-book-open-reader text-5xl text-orange-400 mb-4"></i>
+                    <h4 class="text-3xl font-bold text-white mb-2">Nilai Kamu: <span class="text-orange-400">${score}</span> / 100</h4>
+                    <p class="text-gray-300 text-lg">Kamu sedang berproses! Nilai minimal (KKM) untuk membuka KB berikutnya adalah <strong class="text-white">80</strong>. Silakan ubah jawaban yang masih salah dan kumpulkan ulang.</p>`;
+            }
+                
+            showToast(`Evaluasi Selesai! Kamu mendapat nilai ${score}`, score >= 80 ? "success" : "error");
+            
+            // Auto scroll to result slightly after UI updates
+            setTimeout(() => {
+                resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        }
+
+        // --- Chart.js KB 2 ---
+        function renderChart() {
+            const ctx = document.getElementById('waterChart').getContext('2d');
+            
+            // Gradient fill - Diubah ke nuansa Oranye
+            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(249, 115, 22, 0.8)'); // orange-500
+            gradient.addColorStop(1, 'rgba(249, 115, 22, 0.1)');
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['2022', '2023', '2024', '2025', '2026'],
+                    datasets: [{
+                        label: 'Konsumsi Air (Miliar Liter)',
+                        data: [6.4, 8.5, 12.2, 16.0, 20.5], // Dummy data representing the surge
+                        backgroundColor: gradient,
+                        borderColor: '#f97316', // orange border
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#f1f5f9' } }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        // --- Generator Ide KB 4 ---
+        const ideDatabase = {
+            lingkungan: [
+                { judul: "Plastik Biogradable: Solusi atau Ilusi?", desc: "Bahas fakta sains apakah plastik ramah lingkungan benar-benar hancur di alam." },
+                { judul: "Misteri Hilangnya Lebah di Bumi", desc: "Jelaskan proses polinisasi secara sains dan apa dampaknya jika lebah punah." }
+            ],
+            teknologi: [
+                { judul: "Mengapa Baterai HP Kita Cepat Bocor?", desc: "Jelaskan reaksi kimia dalam baterai Lithium-ion dengan bahasa sehari-hari." },
+                { judul: "Jejak Karbon Dibalik Sebuah Email", desc: "Fakta mengejutkan bahwa mengirim email membutuhkan energi dan menghasilkan CO2." }
+            ],
+            kesehatan: [
+                { judul: "Sains Dibalik 'Masuk Angin'", desc: "Jelaskan secara medis apa yang sebenarnya terjadi pada tubuh saat kita merasa masuk angin." },
+                { judul: "Otak Remaja vs Gula: Siapa yang Menang?", desc: "Dampak neurologis konsumsi boba dan minuman manis pada konsentrasi belajar." }
+            ],
+            luarangkasa: [
+                { judul: "Bisakah Kita Menanam Singkong di Mars?", desc: "Bahas kondisi tanah Mars dan kebutuhan biologis tanaman secara ringan." },
+                { judul: "Sampah Antariksa: Ancaman di Atas Kepala Kita", desc: "Fakta tentang jutaan serpihan satelit bekas yang mengorbit bumi." }
+            ]
+        };
+
+        function generateIdea() {
+            const kategori = document.getElementById('idea-category').value;
+            const resultBox = document.getElementById('idea-result');
+            const descBox = document.getElementById('idea-desc');
+
+            if (!kategori) {
+                showToast('Pilih area minat (kategori) terlebih dahulu!', 'error');
+                return;
+            }
+
+            const listIde = ideDatabase[kategori];
+            const randomIde = listIde[Math.floor(Math.random() * listIde.length)];
+
+            // Efek loading
+            resultBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-gray-500"></i> Memproses data...';
+            descBox.classList.add('hidden');
+
+            setTimeout(() => {
+                resultBox.innerHTML = randomIde.judul;
+                descBox.innerHTML = randomIde.desc;
+                descBox.classList.remove('hidden');
+                showToast('Ide baru berhasil ditemukan!', 'success');
+            }, 600);
+        }
+
+        // --- Fitur Menulis KB 5 (Local Storage) ---
+        const elements = ['title', 'intro', 'body', 'closing'];
+
+        // Load saved draft and init quizzes on load
+        window.addEventListener('DOMContentLoaded', () => {
+            initQuizzes(); // Inisialisasi 60 soal
+            
+            elements.forEach(id => {
+                const savedValue = localStorage.getItem(`draft_${id}`);
+                if (savedValue) {
+                    document.getElementById(`draft-${id}`).value = savedValue;
+                }
+            });
+        });
+
+        // Save progress function
+        function saveDraft() {
+            elements.forEach(id => {
+                const value = document.getElementById(`draft-${id}`).value;
+                localStorage.setItem(`draft_${id}`, value);
+            });
+            showToast('Draft berhasil disimpan di perangkatmu!', 'success');
+        }
+
+        function clearDraft() {
+            elements.forEach(id => {
+                document.getElementById(`draft-${id}`).value = '';
+                localStorage.removeItem(`draft_${id}`);
+            });
+            showToast('Draft dibersihkan.', 'success');
+        }
+
+        function copyDraft() {
+            const title = document.getElementById('draft-title').value;
+            const intro = document.getElementById('draft-intro').value;
+            const body = document.getElementById('draft-body').value;
+            const closing = document.getElementById('draft-closing').value;
+
+            const fullText = `${title.toUpperCase()}\n\n${intro}\n\n${body}\n\n${closing}`;
+            
+            if(!title && !intro && !body && !closing) {
+                showToast('Draft masih kosong, tidak ada yang disalin.', 'error');
+                return;
+            }
+
+            try {
+                // Menggunakan pendekatan modern clipboard API atau fallback execCommand
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(fullText);
+                } else {
+                    let textArea = document.createElement("textarea");
+                    textArea.value = fullText;
+                    textArea.style.position = "fixed";
+                    textArea.style.left = "-999999px";
+                    textArea.style.top = "-999999px";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    textArea.remove();
+                }
+                showToast('Teks disalin ke Clipboard!', 'success');
+            } catch (err) {
+                showToast('Gagal menyalin teks.', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
